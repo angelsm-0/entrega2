@@ -1,4 +1,4 @@
-artifact_path: file:C:/Users/sanch/Downloads/desarrollo/entrega2/mlruns/1/models/m-9e06f91311964398a703755f2f1baca2/artifacts
+artifact_path: file:C:/Users/sanch/Downloads/desarrollo/entrega2/mlruns/1/models/m-7bd9a5a3ba324930bd7f3ab5617a4688/artifacts
 flavors:
   python_function:
     env:
@@ -15,9 +15,9 @@ flavors:
     sklearn_version: 1.8.0
     skops_trusted_types: null
 mlflow_version: 3.10.0
-model_id: m-9e06f91311964398a703755f2f1baca2
-model_size_bytes: 27145
-model_uuid: m-9e06f91311964398a703755f2f1baca2
+model_id: m-7bd9a5a3ba324930bd7f3ab5617a4688
+model_size_bytes: 4844
+model_uuid: m-7bd9a5a3ba324930bd7f3ab5617a4688
 prompts: null
-run_id: 2b4386da83154ba2a950fd63194565d9
-utc_time_created: '2026-02-21 03:27:43.239011'
+run_id: 993c39b79d314b04931162d0cd5429e4
+utc_time_created: '2026-02-21 03:38:36.488780'

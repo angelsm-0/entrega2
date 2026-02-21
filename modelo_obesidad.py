@@ -17,7 +17,7 @@ import os
 
 # 1. Cargar y preparar datos
 url = 'https://raw.githubusercontent.com/pymche/Machine-Learning-Obesity-Classification/master/ObesityDataSet_raw_and_data_sinthetic.csv'
-data_path = 'datos/ObesityDataSet.csv'
+data_path = 'datos/Malnutricion.csv'
 
 # Asegurar que el directorio de datos existe
 if not os.path.exists('datos'):
@@ -29,13 +29,13 @@ if not os.path.exists(data_path):
     try:
         df = pd.read_csv(url)
         df.to_csv(data_path, index=False)
-        print("Dataset guardado en 'datos/ObesityDataSet.csv'")
+        print("Dataset guardado en 'datos/Malnutricion.csv'")
     except Exception as e:
         print(f"Error al descargar: {e}")
         # Intentamos recrear una muestra pequeña si falla la descarga o usamos datos sintéticos
         exit(1)
 else:
-    print("Usando dataset local 'datos/ObesityDataSet.csv'")
+    print("Usando dataset local 'datos/Malnutricion.csv'")
     df = pd.read_csv(data_path)
 
 # 2. Preprocesamiento básico
