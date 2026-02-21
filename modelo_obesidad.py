@@ -14,6 +14,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 import os
+import joblib
 
 # 1. Cargar y preparar datos
 url = 'https://raw.githubusercontent.com/pymche/Machine-Learning-Obesity-Classification/master/ObesityDataSet_raw_and_data_sinthetic.csv'
@@ -139,13 +140,48 @@ for name, model in models_to_test:
     except Exception as e:
         print(f"Error entrenando {name}: {e}")
 
-# 5. Mostrar Tabla Comparativa
+# 5. Mostrar Tabla Comparativa e Identificar el Mejor
 print("\n" + "="*55)
 print(f"{'Modelo':<20} | {'Accuracy':<12} | {'F1-Score':<10}")
 print("-" * 55)
 for res in sorted(results, key=lambda x: x['Accuracy'], reverse=True):
     print(f"{res['Modelo']:<20} | {res['Accuracy']:<12.4f} | {res['F1-Score']:<10.4f}")
 print("="*55)
+
+# 6. Guardar y Registrar el Mejor Modelo
+if results:
+    best_result = max(results, key=lambda x: x['Accuracy'])
+    best_model_name = best_result["Modelo"]
+    
+    print(f"\n🏆 EL MEJOR MODELO ES: {best_model_name} con Accuracy: {best_result['Accuracy']:.4f}")
+    
+    # Buscar el objeto del modelo ganador para guardarlo localmente
+    for name, model_obj in models_to_test:
+        if name == best_model_name:
+            # Crear el pipeline final para el mejor modelo
+            best_pipeline = Pipeline(steps=[
+                ('preprocessor', preprocessor),
+                ('classifier', model_obj)
+            ])
+            # Re-entrenar el mejor pipeline
+            best_pipeline.fit(X_train, y_train)
+            
+            # Guardar localmente
+            output_file = "mejor_modelo_obesidad.joblib"
+            joblib.dump(best_pipeline, output_file)
+            print(f"✅ Mejor modelo guardado localmente como: {output_file}")
+            
+            # Registrar en MLflow con un nombre especial
+            with mlflow.start_run(run_name="Seleccion_Mejor_Modelo"):
+                mlflow.log_param("best_model_type", best_model_name)
+                mlflow.log_metric("best_accuracy", best_result["Accuracy"])
+                mlflow.sklearn.log_model(best_pipeline, "model")
+                print(f"✅ Mejor modelo registrado en MLflow en la corrida 'Seleccion_Mejor_Modelo'")
+            break
+
+print("\n--- PROCESO FINALIZADO ---")
+print("Para visualizar los resultados detallados en MLflow, ejecute:")
+print("mlflow ui --host 0.0.0.0 --port 8050 --allowed-hosts \"*\"")
 
 
 

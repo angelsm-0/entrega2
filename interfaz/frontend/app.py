@@ -93,12 +93,12 @@ with col_side:
     # Módulo de Inferencia (Visualmente igual al mockup)
     st.markdown("""
         <div class="mockup-card">
-            <div class="card-title">⚙️ Módulo de Inferencia</div>
-            <ul style="list-style-type: none; padding-left: 0;">
-                <li style="margin-bottom: 10px;">🔵 Procesando Datos...</li>
-                <li style="margin-bottom: 10px;">🔵 Modelo Predictivo</li>
-                <li style="margin-bottom: 10px;">🔵 Clasificación de Obesidad</li>
-                <li style="margin-bottom: 10px;">🔵 API de Inferencia</li>
+            <div class="card-title" style="color: #1E88E5; border-bottom: 2px solid #1E88E5;">⚙️ Módulo de Inferencia</div>
+            <ul style="list-style-type: none; padding-left: 0; color: #34495e;">
+                <li style="margin-bottom: 10px;"><span style="color: #1E88E5;">●</span> Procesando Datos...</li>
+                <li style="margin-bottom: 10px;"><span style="color: #1E88E5;">●</span> Modelo Predictivo</li>
+                <li style="margin-bottom: 10px;"><span style="color: #1E88E5;">●</span> Clasificación de Obesidad</li>
+                <li style="margin-bottom: 10px;"><span style="color: #1E88E5;">●</span> API de Inferencia</li>
             </ul>
         </div>
     """, unsafe_allow_html=True)
@@ -117,19 +117,21 @@ with col_side:
         else: prediction = "Obesidad Tipo II/III"
         # Resultado de Evaluación (Visualmente igual al mockup)
         st.markdown(f"""
-            <div class="mockup-card">
-                <div class="card-title" style="text-align: center; color: #1a3a5a;">Resultado de Evaluación</div>
-                <h2 style="text-align: center; margin-bottom: 5px;">{prediction}</h2>
+            <div class="mockup-card" style="border-left: 5px solid #2e7d32;">
+                <div class="card-title" style="text-align: center; color: #2e7d32; font-size: 1.4rem;">🎯 Resultado de Evaluación</div>
+                <h2 style="text-align: center; margin-bottom: 5px; color: #1a3a5a;">{prediction}</h2>
                 <div class="risk-bar">
                     <div class="segment normal">Normal</div>
                     <div class="segment riesgo">Riesgo</div>
                     <div class="segment alerta">Alerta</div>
                     <div class="segment obesidad">Obesidad</div>
                 </div>
-                <p style="margin-top: 15px; font-weight: bold;">IMC: {imc:.1f}</p>
-                <p style="font-size: 0.9rem; font-style: italic;">
-                    <b>Recomendación:</b> Se recomienda mejorar su dieta y aumentar la actividad física.
-                </p>
+                <p style="margin-top: 15px; font-weight: bold; color: #2c3e50;">IMC Calculado: <span style="color: #e64a19;">{imc:.1f}</span></p>
+                <div style="background-color: #f1f8e9; padding: 10px; border-radius: 5px; border-left: 3px solid #689f38;">
+                    <p style="font-size: 0.95rem; color: #33691e; margin: 0;">
+                        <b>💡 Recomendación:</b> Se recomienda mejorar su dieta y aumentar la actividad física diaria para mantener un peso saludable.
+                    </p>
+                </div>
             </div>
         """, unsafe_allow_html=True)
     else:
@@ -147,7 +149,7 @@ with dash_cols[0]:
         marker_colors=['#4682B4', '#9ACD32', '#FFD700', '#CD5C5C']
     )])
     fig_donut.update_layout(title_text="Distribución", height=300, showlegend=False)
-    st.plotly_chart(fig_donut, use_container_width=True)
+    st.plotly_chart(fig_donut, width="stretch")
 with dash_cols[1]:
     # FAF vs IMC (Scatter Plot)
     np.random.seed(42)
@@ -158,14 +160,14 @@ with dash_cols[1]:
     })
     fig_scatter = px.scatter(df_scatter, x='FAF', y='IMC', color='Country', height=300)
     fig_scatter.update_layout(title="FAF vs IMC")
-    st.plotly_chart(fig_scatter, use_container_width=True)
+    st.plotly_chart(fig_scatter, width="stretch")
 with dash_cols[2]:
     # Importancia de Variables (Bar Chart)
     importancias = {'Peso': 90, 'Alim': 75, 'Activ': 60, 'Agua': 45, 'Edad': 30}
     df_imp = pd.DataFrame(importancias.items(), columns=['Var', 'Val'])
     fig_imp = px.bar(df_imp, x='Var', y='Val', color='Var', height=300)
     fig_imp.update_layout(title="Importancia", showlegend=False)
-    st.plotly_chart(fig_imp, use_container_width=True)
+    st.plotly_chart(fig_imp, width="stretch")
 with dash_cols[3]:
     # Matriz de Confusión (Heatmap simplificado)
     z = [[10, 1], [2, 17]]
@@ -173,4 +175,4 @@ with dash_cols[3]:
                          labels=dict(x="Predicho", y="Real"),
                          x=['Error', 'Precisión'], y=['Error', 'Precisión'], height=300)
     fig_heat.update_layout(title="Desempeño")
-    st.plotly_chart(fig_heat, use_container_width=True)
+    st.plotly_chart(fig_heat, width="stretch")
