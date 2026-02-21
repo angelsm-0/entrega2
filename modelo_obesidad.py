@@ -8,6 +8,9 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
 from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 import os
@@ -61,7 +64,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.2,
 
 # 3. Configurar MLFlow
 # Usaremos SQLite para el backend local si es posible, o simplemente el filesystem por defecto
-mlflow.set_experiment("Obesity_Classification_Study")
+mlflow.set_experiment("Modelos de Clasificación de Obesidad")
 
 def train_and_log_model(model_name, model):
     print(f"\nEntrenando modelo: {model_name}...")
@@ -110,15 +113,40 @@ def train_and_log_model(model_name, model):
         print(f"Completado: {model_name}")
         print(f"  Accuracy: {acc:.4f}")
         print(f"  F1 Score: {f1:.4f}")
+        
+        return {"accuracy": acc, "f1_weighted": f1}
 
 # 4. Comparar diferentes algoritmos
 models_to_test = [
+    ("LogisticRegression", LogisticRegression(max_iter=1000, random_state=42)),
     ("DecisionTree", DecisionTreeClassifier(random_state=42)),
     ("RandomForest", RandomForestClassifier(n_estimators=100, max_depth=12, random_state=42)),
-    ("XGBoost", XGBClassifier(n_estimators=100, learning_rate=0.1, max_depth=6, random_state=42))
+    ("XGBoost", XGBClassifier(n_estimators=100, learning_rate=0.1, max_depth=6, random_state=42)),
+    ("SVM", SVC(probability=True, random_state=42)),
+    ("KNN", KNeighborsClassifier(n_neighbors=5))
 ]
 
+results = []
+
 for name, model in models_to_test:
-    train_and_log_model(name, model)
+    try:
+        metrics = train_and_log_model(name, model)
+        results.append({
+            "Modelo": name,
+            "Accuracy": metrics["accuracy"],
+            "F1-Score": metrics["f1_weighted"]
+        })
+    except Exception as e:
+        print(f"Error entrenando {name}: {e}")
+
+# 5. Mostrar Tabla Comparativa
+print("\n" + "="*55)
+print(f"{'Modelo':<20} | {'Accuracy':<12} | {'F1-Score':<10}")
+print("-" * 55)
+for res in sorted(results, key=lambda x: x['Accuracy'], reverse=True):
+    print(f"{res['Modelo']:<20} | {res['Accuracy']:<12.4f} | {res['F1-Score']:<10.4f}")
+print("="*55)
+
+
 
 
