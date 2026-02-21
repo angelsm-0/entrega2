@@ -7,7 +7,7 @@ import numpy as np
 import time
 # Configuración de la página
 st.set_page_config(
-    page_title="Obesity Predictor Dashboard",
+    page_title="Malnutricion",
     page_icon="🏥",
     layout="wide"
 )

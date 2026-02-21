@@ -3,7 +3,7 @@ from schemas import UserInput
 from model_loader import load_model
 import numpy as np
 
-app = FastAPI(title="Obesity Prediction API")
+app = FastAPI(title="Malnutricion API")
 
 model = load_model()
 
