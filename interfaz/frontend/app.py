@@ -5,174 +5,260 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 import time
-# Configuración de la página
+
 st.set_page_config(
     page_title="Malnutricion",
     page_icon="🏥",
     layout="wide"
 )
-# --- ESTILOS CSS PARA REPLICAR EL MOCKUP ---
-st.markdown("""
-    <style>
-    /* Estilo General */
-    .main {
-        background-color: #f0f4f8;
-    }
-    
-    /* Contenedores tipo Card del Mockup */
-    .mockup-card {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        border: 1px solid #d1d9e6;
-        box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
-        margin-bottom: 20px;
-    }
-    
-    .card-title {
-        color: #2c3e50;
-        font-weight: bold;
-        border-bottom: 1px solid #ebebeb;
-        padding-bottom: 10px;
-        margin-bottom: 15px;
-        font-size: 1.2rem;
-    }
-    /* Barra de Riesgo (Semáforo) */
-    .risk-bar {
-        display: flex;
-        height: 25px;
-        width: 100%;
-        border-radius: 5px;
-        overflow: hidden;
-        margin-top: 10px;
-    }
-    .segment { flex: 1; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: bold; }
-    .normal { background-color: #6fb064; }
-    .riesgo { background-color: #d4e157; color: #558b2f; }
-    .alerta { background-color: #ffb74d; color: #ef6c00; }
-    .obesidad { background-color: #c62828; }
-    
-    /* Botones */
-    .stButton>button {
-        background-color: #34495e;
-        color: white;
-        border-radius: 4px;
-        font-weight: bold;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+
 API_URL = "http://127.0.0.1:8000/predict"
-# --- SIDEBAR: DATOS DEL USUARIO ---
-st.sidebar.markdown('<div class="card-title">Datos del Usuario</div>', unsafe_allow_html=True)
-with st.sidebar:
-    edad = st.number_input("Edad:", 1, 100, 25)
-    genero = st.selectbox("Género:", ["Femenino", "Masculino"])
-    altura = st.number_input("Altura (m):", 0.5, 2.5, 1.75, step=0.01)
-    peso = st.number_input("Peso (kg):", 10, 300, 70)
-    
-    st.markdown("---")
-    st.subheader("Hábitos y Estilo de Vida")
-    favc = st.selectbox("Consumo de Calorías (Altas):", ["no", "si"])
-    fcvc = st.slider("Consumo de Vegetales (1-3):", 1, 3, 2)
-    ncp = st.slider("Comidas Principales (1-4):", 1, 4, 3)
-    ch2o = st.slider("Consumo de Agua (1-3):", 1, 3, 2)
-    caec = st.selectbox("Consumo entre comidas:", ["no", "algunas veces", "frecuentemente", "siempre"])
-    calc = st.selectbox("Consumo de alcohol:", ["no", "algunas veces", "frecuentemente", "siempre"])
-    
-    st.markdown("---")
-    faf = st.slider("Actividad Física (0-3):", 0, 3, 1)
-    tue = st.slider("Uso de Tecnología (0-2):", 0, 2, 1)
-    mtrans = st.selectbox("Medio de Transporte:", ["transporte publico", "automovil", "andando", "bicicleta", "motocicleta"])
-    scc = st.selectbox("Monitoreo de Calorías:", ["no", "si"])
-    smoke = st.selectbox("Fuma:", ["no", "si"])
-    family = st.selectbox("Antecedentes Familiares:", ["no", "si"])
-    predict_btn = st.button("Calcular IMC / Predicción")
-# --- DISEÑO DE COLUMNAS PRINCIPALES ---
-col_main, col_side = st.columns([1, 1])
+
+# ------------------ CSS ------------------
+
+st.markdown("""
+<style>
+
+.main {
+    background-color: #f0f4f8;
+}
+
+.mockup-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #d1d9e6;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+
+.card-title {
+    color: #2c3e50;
+    font-weight: bold;
+    border-bottom: 1px solid #ebebeb;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.risk-bar {
+    display: flex;
+    height: 25px;
+    width: 100%;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.segment { flex: 1; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: bold; }
+
+.normal { background-color: #6fb064; }
+.riesgo { background-color: #d4e157; color: #558b2f; }
+.alerta { background-color: #ffb74d; color: #ef6c00; }
+.obesidad { background-color: #c62828; }
+
+</style>
+""", unsafe_allow_html=True)
+
+# ------------------ SIDEBAR ------------------
+
+st.sidebar.markdown("## Datos del Usuario")
+
+edad = st.sidebar.number_input("Edad", 1, 100, 25)
+
+genero = st.sidebar.selectbox(
+    "Género",
+    ["Female", "Male"]
+)
+
+altura = st.sidebar.number_input("Altura (m)", 1.3, 2.3, 1.70)
+peso = st.sidebar.number_input("Peso (kg)", 30, 200, 70)
+
+st.sidebar.markdown("### Hábitos")
+
+family = st.sidebar.selectbox(
+    "Historial familiar obesidad",
+    ["yes", "no"]
+)
+
+favc = st.sidebar.selectbox(
+    "Consumo frecuente comida calórica",
+    ["yes", "no"]
+)
+
+fcvc = st.sidebar.slider("Consumo vegetales", 1, 3, 2)
+
+ncp = st.sidebar.slider("Número comidas", 1, 4, 3)
+
+caec = st.sidebar.selectbox(
+    "Comida entre comidas",
+    ["no", "Sometimes", "Frequently", "Always"]
+)
+
+smoke = st.sidebar.selectbox(
+    "Fuma",
+    ["yes", "no"]
+)
+
+ch2o = st.sidebar.slider("Consumo agua", 1, 3, 2)
+
+scc = st.sidebar.selectbox(
+    "Monitorea calorías",
+    ["yes", "no"]
+)
+
+faf = st.sidebar.slider("Actividad física", 0, 3, 1)
+
+tue = st.sidebar.slider("Uso tecnología", 0, 3, 1)
+
+calc = st.sidebar.selectbox(
+    "Consumo alcohol",
+    ["no", "Sometimes", "Frequently", "Always"]
+)
+
+mtrans = st.sidebar.selectbox(
+    "Transporte",
+    [
+        "Public_Transportation",
+        "Walking",
+        "Automobile",
+        "Bike",
+        "Motorbike"
+    ]
+)
+
+predict_btn = st.sidebar.button("Realizar Predicción")
+
+# ------------------ LAYOUT ------------------
+
+col_main, col_side = st.columns([1,1])
+
+# ------------------ INFERENCIA ------------------
+
 with col_side:
-    # Módulo de Inferencia (Visualmente igual al mockup)
+
     st.markdown("""
-        <div class="mockup-card">
-            <div class="card-title" style="color: #1E88E5; border-bottom: 2px solid #1E88E5;">⚙️ Módulo de Inferencia</div>
-            <ul style="list-style-type: none; padding-left: 0; color: #34495e;">
-                <li style="margin-bottom: 10px;"><span style="color: #1E88E5;">●</span> Procesando Datos...</li>
-                <li style="margin-bottom: 10px;"><span style="color: #1E88E5;">●</span> Modelo Predictivo</li>
-                <li style="margin-bottom: 10px;"><span style="color: #1E88E5;">●</span> Clasificación de Obesidad</li>
-                <li style="margin-bottom: 10px;"><span style="color: #1E88E5;">●</span> API de Inferencia</li>
-            </ul>
-        </div>
+    <div class="mockup-card">
+        <div class="card-title">⚙️ Módulo de Inferencia</div>
+        <ul>
+        <li>Procesando datos</li>
+        <li>Pipeline ML</li>
+        <li>Clasificación</li>
+        <li>API FastAPI</li>
+        </ul>
+    </div>
     """, unsafe_allow_html=True)
+
     if predict_btn:
-        # Simulación de carga
-        with st.spinner('Realizando inferencia...'):
-            time.sleep(1.5)
-            
-        imc = peso / (altura ** 2)
-        
-        # Lógica de predicción simulada
-        if imc < 18.5: prediction = "Peso Insuficiente"
-        elif imc < 25: prediction = "Normal"
-        elif imc < 30: prediction = "Sobrepeso Nivel I"
-        elif imc < 35: prediction = "Obesidad Tipo I"
-        else: prediction = "Obesidad Tipo II/III"
-        # Resultado de Evaluación (Visualmente igual al mockup)
-        st.markdown(f"""
+
+        with st.spinner("Consultando modelo..."):
+            time.sleep(1)
+
+        data = {
+            "Gender": genero,
+            "Age": edad,
+            "Height": altura,
+            "Weight": peso,
+            "family_history_with_overweight": family,
+            "FAVC": favc,
+            "FCVC": fcvc,
+            "NCP": ncp,
+            "CAEC": caec,
+            "SMOKE": smoke,
+            "CH2O": ch2o,
+            "SCC": scc,
+            "FAF": faf,
+            "TUE": tue,
+            "CALC": calc,
+            "MTRANS": mtrans
+        }
+
+        try:
+
+            r = requests.post(API_URL, json=data)
+
+            resultado = r.json()
+
+            pred = resultado["prediction_label"]
+
+            imc = peso / (altura**2)
+
+            st.markdown(f"""
             <div class="mockup-card" style="border-left: 5px solid #2e7d32;">
-                <div class="card-title" style="text-align: center; color: #2e7d32; font-size: 1.4rem;">🎯 Resultado de Evaluación</div>
-                <h2 style="text-align: center; margin-bottom: 5px; color: #1a3a5a;">{prediction}</h2>
-                <div class="risk-bar">
-                    <div class="segment normal">Normal</div>
-                    <div class="segment riesgo">Riesgo</div>
-                    <div class="segment alerta">Alerta</div>
-                    <div class="segment obesidad">Obesidad</div>
-                </div>
-                <p style="margin-top: 15px; font-weight: bold; color: #2c3e50;">IMC Calculado: <span style="color: #e64a19;">{imc:.1f}</span></p>
-                <div style="background-color: #f1f8e9; padding: 10px; border-radius: 5px; border-left: 3px solid #689f38;">
-                    <p style="font-size: 0.95rem; color: #33691e; margin: 0;">
-                        <b>💡 Recomendación:</b> Se recomienda mejorar su dieta y aumentar la actividad física diaria para mantener un peso saludable.
-                    </p>
-                </div>
+            <h2 style="text-align:center;">Resultado</h2>
+
+            <h3 style="text-align:center;">{pred}</h3>
+
+            <div class="risk-bar">
+            <div class="segment normal">Normal</div>
+            <div class="segment riesgo">Riesgo</div>
+            <div class="segment alerta">Alerta</div>
+            <div class="segment obesidad">Obesidad</div>
             </div>
-        """, unsafe_allow_html=True)
+
+            <p style="margin-top:15px"><b>IMC:</b> {imc:.2f}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        except:
+
+            st.error("Error conectando con la API")
+
     else:
-        st.info("Complete los datos y presione 'Calcular' para ver el diagnóstico.")
-# --- DASHBOARD (PARTE INFERIOR - COMO EN LA IMAGEN) ---
+
+        st.info("Ingrese datos y presione el botón")
+
+# ------------------ DASHBOARD ------------------
+
 st.markdown("---")
-st.markdown('<div class="card-title">Tablero Analítico</div>', unsafe_allow_html=True)
+st.markdown("## Tablero Analítico")
+
 dash_cols = st.columns(4)
+
 with dash_cols[0]:
-    # Distribución de Obesidad (Donut Chart)
-    fig_donut = go.Figure(data=[go.Pie(
-        labels=['Bajo Peso', 'Normal', 'Sobrepeso', 'Obesidad'],
-        values=[15, 35, 25, 25],
-        hole=.6,
-        marker_colors=['#4682B4', '#9ACD32', '#FFD700', '#CD5C5C']
+
+    fig = go.Figure(data=[go.Pie(
+        labels=['Bajo Peso','Normal','Sobrepeso','Obesidad'],
+        values=[15,35,25,25],
+        hole=.6
     )])
-    fig_donut.update_layout(title_text="Distribución", height=300, showlegend=False)
-    st.plotly_chart(fig_donut, width="stretch")
+
+    fig.update_layout(title="Distribución")
+
+    st.plotly_chart(fig, use_container_width=True)
+
 with dash_cols[1]:
-    # FAF vs IMC (Scatter Plot)
+
     np.random.seed(42)
-    df_scatter = pd.DataFrame({
-        'FAF': np.random.uniform(0, 3, 50),
-        'IMC': np.random.uniform(18, 40, 50),
-        'Country': np.random.choice(['Mexico', 'Colombia', 'Peru'], 50)
+
+    df = pd.DataFrame({
+        "FAF": np.random.uniform(0,3,50),
+        "IMC": np.random.uniform(18,40,50)
     })
-    fig_scatter = px.scatter(df_scatter, x='FAF', y='IMC', color='Country', height=300)
-    fig_scatter.update_layout(title="FAF vs IMC")
-    st.plotly_chart(fig_scatter, width="stretch")
+
+    fig = px.scatter(df, x="FAF", y="IMC")
+
+    st.plotly_chart(fig, use_container_width=True)
+
 with dash_cols[2]:
-    # Importancia de Variables (Bar Chart)
-    importancias = {'Peso': 90, 'Alim': 75, 'Activ': 60, 'Agua': 45, 'Edad': 30}
-    df_imp = pd.DataFrame(importancias.items(), columns=['Var', 'Val'])
-    fig_imp = px.bar(df_imp, x='Var', y='Val', color='Var', height=300)
-    fig_imp.update_layout(title="Importancia", showlegend=False)
-    st.plotly_chart(fig_imp, width="stretch")
+
+    imp = pd.DataFrame({
+        "Variable":["Weight","FAF","FCVC","Age"],
+        "Valor":[90,70,60,40]
+    })
+
+    fig = px.bar(imp, x="Variable", y="Valor")
+
+    st.plotly_chart(fig, use_container_width=True)
+
 with dash_cols[3]:
-    # Matriz de Confusión (Heatmap simplificado)
-    z = [[10, 1], [2, 17]]
-    fig_heat = px.imshow(z, text_auto=True, color_continuous_scale='Blues',
-                         labels=dict(x="Predicho", y="Real"),
-                         x=['Error', 'Precisión'], y=['Error', 'Precisión'], height=300)
-    fig_heat.update_layout(title="Desempeño")
-    st.plotly_chart(fig_heat, width="stretch")
+
+    z = [[10,1],[2,17]]
+
+    fig = px.imshow(
+        z,
+        text_auto=True,
+        labels=dict(x="Predicho", y="Real")
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
