@@ -221,7 +221,7 @@ El sistema clasifica a los usuarios en una de las siguientes categorías:
 
 **Luis Angel S.M.**  
 
-**Miguel Angel S.M.**  
+**Miguel Angel U.R.**  
 
 Proyecto desarrollado como parte de la Maestría en Inteligencia Artificial.
 
